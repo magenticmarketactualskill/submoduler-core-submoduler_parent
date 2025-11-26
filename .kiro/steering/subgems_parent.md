@@ -1,25 +1,25 @@
-# Subgems Guide
+# Submodules Development Guide
 
 ## Overview
 
-Subgems are complete Ruby gems developed within the active_data_flow repository. They package specific functionality (connectors, runtimes) as independent gems while being managed in the same repository as the core gem.
+Submodules are complete Ruby gems developed as separate git repositories and linked into the active_data_flow repository. They package specific functionality (connectors, runtimes) as independent gems with their own version control.
 
-**Key Distinction**: Subgems are NOT git submodules - they are part of the active_data_flow repository.
+**Key Distinction**: Submodules ARE git submodules - they are separate repositories linked into active_data_flow.
 
-## Why Subgems?
+## Why Submodules?
 
 - **Modular Development**: Each component can be developed independently
-- **Independent Versioning**: Subgems can have their own version numbers
-- **Selective Installation**: Users install only the subgems they need
-- **Shared Repository**: All code in one place for easier coordination
+- **Independent Versioning**: Submodules have their own version numbers and git history
+- **Selective Installation**: Users install only the submodules they need
+- **Independent Repositories**: Each component has its own git repository
 - **Turnkey Installation**: Common use-cases work out of the box
 
-## Subgem Structure
+## Submodule Structure
 
-Each subgem follows this standard structure:
+Each submodule follows this standard structure:
 
 ```
-subgems/active_data_flow-{component}-{type}-{name}/
+submodules/active_data_flow-{component}-{type}-{name}/
 ├── lib/
 │   ├── active_data_flow/
 │   │   └── {component}/
@@ -80,7 +80,7 @@ Match module structure:
 - `lib/active_data_flow/connector/sink/active_record.rb`
 - `lib/active_data_flow/runtime/heartbeat.rb`
 
-## Current Subgems
+## Current Submodules
 
 ### Connectors
 
@@ -95,12 +95,17 @@ Match module structure:
 **Execution Environments**:
 - `active_data_flow-runtime-heartbeat` - Rails engine with periodic HTTP-triggered execution
 
-## Creating a New Subgem
+## Creating a New Submodule
 
-### 1. Directory Structure
+### 1. Create Repository
+
+Create a new GitHub repository for the submodule, then clone it into submodules/:
 
 ```bash
-mkdir -p subgems/active_data_flow-{component}-{type}-{name}/{lib/active_data_flow/{component}/{type},spec,.kiro/{specs,steering,settings}}
+cd submodules
+git clone https://github.com/yourusername/active_data_flow-{component}-{type}-{name}.git
+cd active_data_flow-{component}-{type}-{name}
+mkdir -p lib/active_data_flow/{component}/{type} spec .kiro/{specs,steering,settings}
 ```
 
 ### 2. Core Files
@@ -124,26 +129,26 @@ Create these essential files:
 
 **Create symlinks to parent steering**:
 ```bash
-cd subgems/active_data_flow-{component}-{type}-{name}/.kiro/steering
-ln -sf ../../../../.kiro/glossary.md glossary.md
-ln -sf ../../../../.kiro/steering/product.md product.md
-ln -sf ../../../../.kiro/steering/structure.md structure.md
-ln -sf ../../../../.kiro/steering/tech.md tech.md
-ln -sf ../../../../.kiro/steering/design_gem.md design_gem.md
-ln -sf ../../../../.kiro/steering/dry.md dry.md
-ln -sf ../../../../.kiro/steering/test_driven_design.md test_driven_design.md
-ln -sf ../../../../.kiro/steering/gemfiles.md gemfiles.md
+cd .kiro/steering
+ln -sf ../../../.kiro/glossary.md glossary.md
+ln -sf ../../../.kiro/steering/product.md product.md
+ln -sf ../../../.kiro/steering/structure.md structure.md
+ln -sf ../../../.kiro/steering/tech.md tech.md
+ln -sf ../../../.kiro/steering/design_gem.md design_gem.md
+ln -sf ../../../.kiro/steering/dry.md dry.md
+ln -sf ../../../.kiro/steering/test_driven_design.md test_driven_design.md
+ln -sf ../../../.kiro/steering/gemfiles.md gemfiles.md
 ```
 
 **Create symlinks to parent specs**:
 ```bash
-cd subgems/active_data_flow-{component}-{type}-{name}/.kiro/specs
-ln -sf ../../../../.kiro/specs/requirements.md parent_requirements.md
-ln -sf ../../../../.kiro/specs/design.md parent_design.md
+cd ../ specs
+ln -sf ../../../.kiro/specs/requirements.md parent_requirements.md
+ln -sf ../../../.kiro/specs/design.md parent_design.md
 ```
 
-**Create subgem-specific docs**:
-- `.kiro/specs/requirements.md` - Subgem requirements
+**Create submodule-specific docs**:
+- `.kiro/specs/requirements.md` - Submodule requirements
 - `.kiro/specs/design.md` - Implementation design
 - `.kiro/specs/tasks.md` - Implementation tasks
 - `.kiro/README.md` - .kiro structure guide
@@ -204,25 +209,26 @@ end
 
 ### Local Development
 
-1. **Work in subgem directory**:
+1. **Work in submodule directory**:
    ```bash
-   cd subgems/active_data_flow-connector-source-active_record
+   cd submodules/active_data_flow-connector-source-active_record
    bundle install
    bundle exec rspec
    ```
 
-2. **Test from parent**:
-   Add path reference to parent Gemfile:
-   ```ruby
-   gem 'active_data_flow-connector-source-active_record', 
-       path: 'subgems/active_data_flow-connector-source-active_record'
+2. **Commit and push changes**:
+   ```bash
+   git add .
+   git commit -m "Your changes"
+   git push
    ```
 
-3. **Run parent tests**:
+3. **Update parent to reference new commit**:
    ```bash
    cd ../..  # Back to active_data_flow root
-   bundle install
-   bundle exec rspec
+   git add submodules/active_data_flow-connector-source-active_record
+   git commit -m "Update submodule to latest"
+   git push
    ```
 
 ### Publishing
@@ -236,7 +242,7 @@ end
 
 ### Code Organization
 
-- **Single Responsibility**: Each subgem does one thing well
+- **Single Responsibility**: Each submodule does one thing well
 - **Minimal Dependencies**: Only depend on what's necessary
 - **Clear Interfaces**: Follow parent abstract base classes
 - **Comprehensive Tests**: Test all public interfaces
@@ -252,14 +258,14 @@ end
 ### Version Management
 
 - **Semantic Versioning**: MAJOR.MINOR.PATCH
-- **Independent Versions**: Each subgem versions independently
+- **Independent Versions**: Each submodule versions independently
 - **Compatibility**: Document compatibility with core gem versions
 
 ## Troubleshooting
 
 ### Bundle Issues
 
-If `bundle install` fails in a subgem:
+If `bundle install` fails in a submodule:
 1. Check Gemfile has correct submoduler_child reference
 2. Verify gemspec dependencies are correct
 3. Try `bundle update` to refresh dependencies
@@ -267,9 +273,16 @@ If `bundle install` fails in a subgem:
 ### Symlink Issues
 
 If symlinks are broken:
-1. Verify path depth (should be `../../../../` for subgems)
+1. Verify path depth (should be `../../../` for submodules)
 2. Check parent files exist
 3. Recreate symlinks with correct paths
+
+### Submodule Update Issues
+
+If submodule is out of sync:
+1. `git submodule update --init --recursive` to initialize
+2. `cd submodules/{name} && git pull` to update
+3. `cd ../.. && git add submodules/{name}` to commit reference
 
 ### Import Issues
 

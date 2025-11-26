@@ -5,6 +5,7 @@ require 'optparse'
 module SubmodulerParent
   class CLI
     COMMANDS = {
+      'install' => 'Install submoduler_parent bin files to host project',
       'status' => 'Display status of parent and all child submodules',
       'test' => 'Run tests across parent and all child submodules',
       'push' => 'Push changes to parent and all child submodules',
@@ -63,6 +64,8 @@ module SubmodulerParent
 
     def execute_command
       case @command
+      when 'install'
+        InstallCommand.new(@args).execute
       when 'status'
         StatusCommand.new(@args).execute
       when 'test'

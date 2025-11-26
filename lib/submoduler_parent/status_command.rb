@@ -38,6 +38,10 @@ module SubmodulerParent
     def check_parent_status
       puts "Parent Repository:"
       
+      # Show last commit info
+      show_last_commit("  ")
+      
+      # Show working tree status
       status_output = `git status --short 2>&1`
       
       if $?.success?
@@ -103,6 +107,10 @@ module SubmodulerParent
       end
       
       Dir.chdir(path) do
+        # Show last commit info
+        show_last_commit("    ")
+        
+        # Show working tree status
         status_output = `git status --short 2>&1`
         
         if $?.success?
@@ -117,6 +125,21 @@ module SubmodulerParent
         else
           puts "    ✗ Error checking git status"
         end
+      end
+    end
+
+    def show_last_commit(indent = "")
+      # Get current branch
+      branch = `git branch --show-current 2>&1`.strip
+      branch_info = $?.success? && !branch.empty? ? " (#{branch})" : ""
+      
+      # Get last commit info with format: hash, date, author, subject
+      commit_info = `git log -1 --pretty=format:"%h %ad %an: %s" --date=short 2>&1`
+      
+      if $?.success? && !commit_info.strip.empty?
+        puts "#{indent}📝 Last commit#{branch_info}: #{commit_info.strip}"
+      else
+        puts "#{indent}⚠️  No commit history found#{branch_info}"
       end
     end
   end

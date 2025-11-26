@@ -2,12 +2,12 @@
 
 ## Overview
 
-The `submoduler` gem is the base tool for managing subgems and git submodules and monorepo structures. It provides the foundation for both `submoduler_parent` and `submoduler_child` gems used in the active_data_flow project.
+The `submoduler` gem is the base tool for managing git submodules in monorepo structures. It provides the foundation for both `submoduler_parent` and `submoduler_child` gems used in the active_data_flow project.
 
 **Submoduler Ecosystem**:
 - **`submoduler`** - Base gem with core functionality
 - **`submoduler_parent`** - Used by parent repositories (active_data_flow)
-- **`submoduler_child`** - Used by child components (subgems)
+- **`submoduler_child`** - Used by child components (submodules)
 
 ## Vendored Location
 
@@ -69,7 +69,7 @@ active_data_flow
 ├── Uses: submoduler_parent (vendored in vendor/submoduler_parent)
 │   └── Depends on: submoduler (base gem)
 │
-└── subgems/
+└── submodules/
     ├── active_data_flow-connector-source-active_record
     │   ├── Uses: submoduler_child (vendored in vendor/submoduler_child)
     │   │   └── Depends on: submoduler (base gem)
@@ -133,7 +133,7 @@ Submoduler enables:
   - Provides shared configuration
   - Uses `submoduler_parent` gem
 
-- **Children** (subgems):
+- **Children** (submodules):
   - Implement specific functionality
   - Reference parent for shared resources
   - Independent but coordinated
@@ -144,7 +144,7 @@ Submoduler enables:
 ```
 active_data_flow/
 ├── .submoduler.ini (if exists)     # Parent configuration
-└── subgems/
+└── submodules/
     └── component/
         └── .submoduler.ini         # Child configuration
             └── References parent path
@@ -327,7 +327,7 @@ active_data_flow/
 │   ├── submoduler/             # Base gem
 │   ├── submoduler_parent/      # Parent gem
 │   └── submoduler_child/       # Child gem
-└── subgems/
+└── submodules/
     └── component/
         ├── Gemfile             # References submoduler_child
         └── .submoduler.ini     # Points to parent
@@ -337,7 +337,7 @@ active_data_flow/
 
 - **Submoduler Parent**: `.kiro/steering/submodules_parent.md` - Parent gem guide
 - **Submoduler Child**: `.kiro/steering/submoduler_child.md` - Child gem guide
-- **Subgems Guide**: `.kiro/steering/subgems_parent.md` - Subgem development
+- **Submodules Development**: `.kiro/steering/submodules_development.md` - Submodule development
 - **Gemfile Guidelines**: `.kiro/steering/gemfiles.md` - Gemfile patterns
 - **Project Structure**: `.kiro/steering/structure.md` - Repository organization
 

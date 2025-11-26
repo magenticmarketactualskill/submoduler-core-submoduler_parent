@@ -2,52 +2,32 @@
 
 ## Overview
 
-Submodules are git submodules that reference external repositories. Unlike subgems (which are part of the active_data_flow repository), submodules are separate git repositories linked into the project.
+All component implementations (connectors, runtimes) are now managed as git submodules. Each submodule is a separate git repository linked into the active_data_flow project.
 
-**Important**: For most development, use subgems instead of submodules. Submodules are for components that need independent repository management.
+**Current Structure**: All components are in `submodules/` directory as git submodules with independent repositories.
 
 ## Vendor Directory
 
 The `vendor/` directory contains vendored copies of the submoduler gems for local development:
 
 - **`vendor/submoduler_parent/`** - Submoduler parent gem (used by active_data_flow)
-- **`vendor/submoduler_child/`** - Submoduler child gem (used by subgems)
 - **`vendor/submoduler/`** - Base submoduler functionality
 
 These are git clones of the submoduler repositories, allowing local development without depending on remote git repositories. The Gemfile references these via git URLs, but they can be overridden to use local paths during development.
 
-## Subgems vs Submodules
-
-| Aspect | Subgems | Submodules |
-|--------|---------|------------|
-| **Location** | `subgems/` directory | `submodules/` directory |
-| **Git Management** | Part of active_data_flow repo | Separate git repositories |
-| **Development** | Direct editing in monorepo | Clone and update separately |
-| **Use Case** | Core components, turnkey features | External integrations, optional features |
-| **Versioning** | Managed in active_data_flow | Independent git tags |
-| **Gemfile Reference** | `submoduler-core-submoduler_child` | `submoduler-core-submoduler_child` |
-
-## When to Use Submodules
-
-Use submodules when:
-- Component needs independent repository (separate team, different release cycle)
-- Component is optional and not needed for core functionality
-- Component integrates with external systems requiring separate maintenance
-- Component has different licensing requirements
-
-Use subgems when:
-- Component is core to active_data_flow functionality
-- Component should be included in turnkey installation
-- Development happens primarily within active_data_flow team
-- Simpler development workflow is preferred
-
 ## Current Submodules
 
-The `submodules/` directory may contain:
-- External connector implementations
-- Optional runtime environments
-- Integration adapters
-- Example applications (some examples may be submodules)
+All component implementations are now managed as submodules:
+
+**Connectors**:
+- `submodules/active_data_flow-connector-source-active_record/` - ActiveRecord source connector
+- `submodules/active_data_flow-connector-sink-active_record/` - ActiveRecord sink connector
+
+**Runtimes**:
+- `submodules/active_data_flow-runtime-heartbeat/` - Rails heartbeat runtime
+
+**Examples**:
+- `submodules/examples/rails8-demo/` - Example Rails 8 application
 
 **Note**: Check `.gitmodules` file for current submodule list.
 
@@ -100,7 +80,7 @@ git commit -m "Remove component-name submodule"
 
 ## Submodule Structure
 
-Submodules should follow the same structure as subgems:
+Submodules follow this standard structure:
 
 ```
 submodules/active_data_flow-{component}-{type}-{name}/
@@ -184,9 +164,9 @@ gem 'submoduler-core-submoduler_parent', git: 'https://github.com/magenticmarket
 gem 'submoduler-core-submoduler_parent', path: 'vendor/submoduler_parent'
 ```
 
-### Subgems and Submodules
+### Submodules
 
-Subgems and submodules use `submoduler_child`:
+All submodules use `submoduler_child`:
 
 ```ruby
 # frozen_string_literal: true
@@ -284,22 +264,15 @@ If bundle fails in submodule:
 3. Check Gemfile has correct dependencies
 4. Try `bundle update` in submodule directory
 
-## Migration Between Subgems and Submodules
+## Adding New Submodules
 
-### Converting Subgem to Submodule
+### Creating a New Submodule
 
 1. Create new git repository for component
-2. Copy subgem code to new repo
-3. Remove subgem from `subgems/`
-4. Add as submodule to `submodules/`
-5. Update parent Gemfile references
-
-### Converting Submodule to Subgem
-
-1. Copy submodule code to `subgems/`
-2. Remove submodule: `git submodule deinit` and `git rm`
-3. Update parent Gemfile to use path reference
-4. Commit changes to parent repo
+2. Initialize the component code in the new repo
+3. Add as submodule to `submodules/`
+4. Update parent Gemfile references
+5. Update `.submoduler.ini` configuration
 
 ## Ignoring Submodules
 
@@ -311,7 +284,7 @@ git clone https://github.com/yourusername/active_data_flow.git
 # Don't run: git submodule update --init
 ```
 
-The active_data_flow gem will work without submodules if you only use subgems.
+The active_data_flow gem requires submodules to be initialized for full functionality.
 
 ## Working with Vendor Directory
 
@@ -365,7 +338,7 @@ vendor/
 │   ├── lib/
 │   ├── submoduler_parent.gemspec
 │   └── README.md
-├── submoduler_child/           # Child gem (for subgems)
+├── submoduler_child/           # Child gem (for submodules)
 │   ├── .git/                   # Git repository
 │   ├── lib/
 │   ├── submoduler_child.gemspec
@@ -378,7 +351,7 @@ vendor/
 
 ## Related Documentation
 
-- **Subgems Guide**: `.kiro/steering/subgems_parent.md` - Preferred approach for most components
+- **Submodules Development**: `.kiro/steering/submodules_development.md` - Guide for developing submodules
 - **Gemfile Guidelines**: `.kiro/steering/gemfiles.md`
 - **Project Structure**: `.kiro/steering/structure.md`
 - **Git Submodules**: https://git-scm.com/book/en/v2/Git-Tools-Submodules
