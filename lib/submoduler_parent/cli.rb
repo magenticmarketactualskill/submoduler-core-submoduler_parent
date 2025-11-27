@@ -3,7 +3,7 @@
 require 'optparse'
 
 module SubmodulerParent
-  class CLI
+  class CLI < SubmodulerCommon::Command
     COMMANDS = {
       'install' => 'Install submoduler_parent bin files to host project',
       'status' => 'Display status of parent and all child submodules',
@@ -42,24 +42,23 @@ module SubmodulerParent
 
       execute_command
     rescue StandardError => e
-      puts "Error: #{e.message}"
+      logger.error "Error: #{e.message}"
       1
     end
 
     private
 
     def verify_parent_context
-      config_file = '.submoduler.ini'
+      ini = SubmodulerCommon::SubmodulerIni.new
       
-      unless File.exist?(config_file)
-        raise "Not in a Submoduler directory. Missing #{config_file}"
+      unless ini.exist?
+        raise "Not in a Submoduler directory. Missing .submoduler.ini"
       end
 
-      content = File.read(config_file)
-      
-      unless content.match?(/master\s*=/)
-        raise "Invalid .submoduler.ini: missing 'master' configuration"
-      end
+      ini.load_config
+      ini.validate_parent!
+    rescue SubmodulerCommon::SubmodulerIni::ConfigError => e
+      raise "Invalid configuration: #{e.message}"
     end
 
     def execute_command

@@ -133,16 +133,9 @@ module SubmodulerParent
     end
 
     def find_project_root
-      current_dir = Dir.pwd
-      
-      while current_dir != '/'
-        if File.exist?(File.join(current_dir, '.submoduler.ini'))
-          return current_dir
-        end
-        current_dir = File.dirname(current_dir)
-      end
-      
-      raise "Could not find project root (no .submoduler.ini found)"
+      SubmodulerCommon::SubmodulerIni.find_project_root
+    rescue SubmodulerCommon::SubmodulerIni::NotFoundError => e
+      raise e.message
     end
   end
 end
