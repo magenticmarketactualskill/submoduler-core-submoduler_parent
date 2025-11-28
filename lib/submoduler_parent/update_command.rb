@@ -109,8 +109,12 @@ module SubmodulerParent
       
       # Run update command in submodule
       Dir.chdir(path) do
+        # Calculate relative path to bin/submoduler from submodule
+        depth = path.split('/').length
+        relative_path = ('../' * depth) + 'bin/submoduler'
+        
         # Build the command
-        cmd = "../../bin/submoduler update"
+        cmd = "#{relative_path} update"
         cmd += " --release" if @options[:release]
         
         puts "Running: #{cmd}"
