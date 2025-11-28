@@ -10,6 +10,7 @@ module SubmodulerParent
       @failed_submodules = []
       @skipped_submodules = []
       @updated_submodules = []
+      @parent_update_success = false
       parse_options
     end
 
@@ -17,23 +18,31 @@ module SubmodulerParent
       puts "=== Parent Update Workflow ==="
       puts ""
       
+      # Update submodules first
       submodules = get_submodules
       
       if submodules.empty?
         puts "No submodules found to update."
-        return 0
+      else
+        puts "Found #{submodules.length} submodule(s) to update"
+        puts ""
+        
+        submodules.each do |submodule|
+          update_submodule(submodule)
+        end
       end
       
-      puts "Found #{submodules.length} submodule(s) to update"
-      puts ""
-      
-      submodules.each do |submodule|
-        update_submodule(submodule)
+      # Update parent repository (unless skipped)
+      unless @options[:skip_parent]
+        update_parent
+      else
+        puts "⊘ Skipping parent repository update"
+        @parent_update_success = true
       end
       
       display_summary
       
-      @failed_submodules.empty? ? 0 : 1
+      @failed_submodules.empty? && @parent_update_success ? 0 : 1
     rescue StandardError => e
       puts "Error: #{e.message}"
       1
@@ -51,6 +60,10 @@ module SubmodulerParent
         
         opts.on("--only SUBMODULE", "Only update specified submodule") do |v|
           @options[:only] = v
+        end
+        
+        opts.on("--skip-parent", "Skip updating the parent repository") do
+          @options[:skip_parent] = true
         end
         
         opts.on("-h", "--help", "Show this help message") do
@@ -140,26 +153,103 @@ module SubmodulerParent
       @failed_submodules << name
     end
 
+    def update_parent
+      puts "─" * 60
+      puts "Updating: Parent Repository"
+      puts ""
+      
+      # Check if there are any changes
+      status_output = `git status --porcelain`
+      
+      if status_output.strip.empty?
+        puts "ℹ No changes in parent repository"
+        @parent_update_success = true
+        return
+      end
+      
+      # Run tests if available
+      if run_parent_tests
+        puts "✓ Tests passed"
+      else
+        puts "⚠ No tests found or tests failed"
+      end
+      
+      # Stage and commit changes
+      puts "Staging changes..."
+      system("git add .")
+      
+      puts "Committing changes..."
+      message = "Update parent repository #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
+      system("git commit -m '#{message}'")
+      
+      if $?.success?
+        puts "✓ Changes committed"
+        
+        # Push changes
+        puts "Pushing changes to remote..."
+        system("git push")
+        
+        if $?.success?
+          puts "✓ Changes pushed"
+          @parent_update_success = true
+        else
+          puts "⚠ Failed to push changes"
+          @parent_update_success = false
+        end
+      else
+        puts "✗ Failed to commit changes"
+        @parent_update_success = false
+      end
+      
+      puts ""
+    rescue StandardError => e
+      puts "✗ Error updating parent: #{e.message}"
+      @parent_update_success = false
+    end
+
+    def run_parent_tests
+      # Check for common test directories/files
+      if Dir.exist?('test')
+        puts "Running tests..."
+        system("ruby -Ilib:test -e 'Dir.glob(\"test/**/*test*.rb\").each { |f| require_relative f }'")
+        return $?.success?
+      elsif Dir.exist?('spec')
+        puts "Running tests..."
+        system("bundle exec rspec")
+        return $?.success?
+      end
+      
+      false
+    end
+
     def display_summary
       puts "=" * 60
       puts "Update Summary"
       puts "=" * 60
       puts ""
       
+      if @parent_update_success
+        puts "✓ Parent repository updated"
+        puts ""
+      elsif @parent_update_success == false
+        puts "✗ Parent repository update failed"
+        puts ""
+      end
+      
       if @updated_submodules.any?
-        puts "✓ Updated (#{@updated_submodules.length}):"
+        puts "✓ Updated submodules (#{@updated_submodules.length}):"
         @updated_submodules.each { |name| puts "  - #{name}" }
         puts ""
       end
       
       if @skipped_submodules.any?
-        puts "⊘ Skipped (#{@skipped_submodules.length}):"
+        puts "⊘ Skipped submodules (#{@skipped_submodules.length}):"
         @skipped_submodules.each { |name| puts "  - #{name}" }
         puts ""
       end
       
       if @failed_submodules.any?
-        puts "✗ Failed (#{@failed_submodules.length}):"
+        puts "✗ Failed submodules (#{@failed_submodules.length}):"
         @failed_submodules.each { |name| puts "  - #{name}" }
         puts ""
       end
