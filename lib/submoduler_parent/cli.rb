@@ -8,6 +8,7 @@ module SubmodulerParent
       'install' => 'Install submoduler_parent bin files to host project',
       'status' => 'Display status of parent and all child submodules',
       'test' => 'Run tests across parent and all child submodules',
+      'update' => 'Update all child submodules (test, commit, bump, push)',
       'push' => 'Push changes to parent and all child submodules',
       'report' => 'Generate configuration and status reports',
       'release' => 'Manage release workflow for parent and children',
@@ -69,6 +70,8 @@ module SubmodulerParent
         StatusCommand.new(@args).execute
       when 'test'
         TestCommand.new(@args).execute
+      when 'update'
+        UpdateCommand.new(@args).execute
       when 'symlink_build'
         SymlinkBuildCommand.run
         0

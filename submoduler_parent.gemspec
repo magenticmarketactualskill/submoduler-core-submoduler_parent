@@ -3,7 +3,7 @@
 require_relative "lib/submoduler_parent/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "submoduler-core-submoduler_parent"
+  spec.name = "submoduler-submoduler_parent"
   spec.version = SubmodulerParent::VERSION
   spec.authors = ["Submoduler Team"]
   spec.email = ["team@submoduler.dev"]
